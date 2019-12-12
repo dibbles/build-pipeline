@@ -17,11 +17,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"strings"
-
 	"github.com/tektoncd/pipeline/pkg/names"
 	"golang.org/x/xerrors"
 	corev1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 const WorkspaceDir = "/workspace"
@@ -39,9 +38,9 @@ type GitResource struct {
 	// Git revision (branch, tag, commit SHA or ref) to clone.  See
 	// https://git-scm.com/docs/gitrevisions#_specifying_revisions for more
 	// information.
-	Revision string `json:"revision"`
-
-	GitImage string `json:"-"`
+	Revision  string `json:"revision"`
+	TLSVerify string `json:"tlsVerify"`
+	GitImage  string `json:"-"`
 }
 
 // NewGitResource creates a new git resource to pass to a Task
@@ -60,6 +59,8 @@ func NewGitResource(gitImage string, r *PipelineResource) (*GitResource, error) 
 			gitResource.URL = param.Value
 		case strings.EqualFold(param.Name, "Revision"):
 			gitResource.Revision = param.Value
+		case strings.EqualFold(param.Name, "TLSVerify"):
+			gitResource.TLSVerify = param.Value
 		}
 	}
 	// default revision to master if nothing is provided
@@ -87,10 +88,11 @@ func (s *GitResource) GetURL() string {
 // Replacements is used for template replacement on a GitResource inside of a Taskrun.
 func (s *GitResource) Replacements() map[string]string {
 	return map[string]string{
-		"name":     s.Name,
-		"type":     string(s.Type),
-		"url":      s.URL,
-		"revision": s.Revision,
+		"name":      s.Name,
+		"type":      string(s.Type),
+		"url":       s.URL,
+		"revision":  s.Revision,
+		"tlsVerify": s.TLSVerify,
 	}
 }
 
@@ -98,6 +100,7 @@ func (s *GitResource) Replacements() map[string]string {
 func (s *GitResource) GetInputTaskModifier(_ *TaskSpec, path string) (TaskModifier, error) {
 	args := []string{"-url", s.URL,
 		"-revision", s.Revision,
+		"-tlsVerify", s.TLSVerify,
 	}
 
 	args = append(args, []string{"-path", path}...)

@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"os"
 	"os/exec"
+
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -44,7 +45,7 @@ func run(logger *zap.SugaredLogger, dir string, args ...string) (string, error) 
 }
 
 // Fetch fetches the specified git repository at the revision into path.
-func Fetch(logger *zap.SugaredLogger, revision, path, url string) error {
+func Fetch(logger *zap.SugaredLogger, revision, path, url, tlsVerification string) error {
 	// HACK: This is to get git+ssh to work since ssh doesn't respect the HOME
 	// env variable.
 	homepath, err := homedir.Dir()
@@ -86,6 +87,12 @@ func Fetch(logger *zap.SugaredLogger, revision, path, url string) error {
 	}
 	trimmedURL := strings.TrimSpace(url)
 	if _, err := run(logger, "", "remote", "add", "origin", trimmedURL); err != nil {
+		return err
+	}
+
+	//logger.Fatalf("DUANE : %s", tlsVerification)
+	if _, err := run(logger, "", "config", "--global", "http.sslVerify", tlsVerification); err != nil {
+		logger.Warnf("DUANE ERR : %s", err)
 		return err
 	}
 	if _, err := run(logger, "", "fetch", "--depth=1", "--recurse-submodules=yes", "origin", revision); err != nil {
