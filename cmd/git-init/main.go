@@ -30,6 +30,7 @@ var (
 	path                   = flag.String("path", "", "Path of directory under which git repository will be copied")
 	terminationMessagePath = flag.String("terminationMessagePath", "/dev/termination-log", "Location of file containing termination message")
 	submodules             = flag.Bool("submodules", true, "Initialize and fetch git submodules")
+	tlsVerify              = flag.Bool("tlsVerify", true, "Enable tls verification on git commands")
 )
 
 func main() {
@@ -37,7 +38,7 @@ func main() {
 	logger, _ := logging.NewLogger("", "git-init")
 	defer logger.Sync()
 
-	if err := git.Fetch(logger, *revision, *path, *url); err != nil {
+	if err := git.Fetch(logger, *revision, *path, *url, *tlsVerify); err != nil {
 		logger.Fatalf("Error fetching git repository: %s", err)
 	}
 	if *submodules {

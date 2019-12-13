@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -44,7 +45,7 @@ func run(logger *zap.SugaredLogger, dir string, args ...string) (string, error) 
 }
 
 // Fetch fetches the specified git repository at the revision into path.
-func Fetch(logger *zap.SugaredLogger, revision, path, url string) error {
+func Fetch(logger *zap.SugaredLogger, revision, path, url string, tlsVerify bool) error {
 	if err := ensureHomeEnv(logger); err != nil {
 		return err
 	}
@@ -64,6 +65,10 @@ func Fetch(logger *zap.SugaredLogger, revision, path, url string) error {
 	}
 	trimmedURL := strings.TrimSpace(url)
 	if _, err := run(logger, "", "remote", "add", "origin", trimmedURL); err != nil {
+		return err
+	}
+	if _, err := run(logger, "", "config", "--global", "http.sslVerify", strconv.FormatBool(tlsVerify)); err != nil {
+		logger.Warnf("Failed to set http.sslVerify in git config: %s", err)
 		return err
 	}
 	if _, err := run(logger, "", "fetch", "--depth=1", "--recurse-submodules=yes", "origin", revision); err != nil {

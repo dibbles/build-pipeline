@@ -41,6 +41,7 @@ type GitResource struct {
 	// information.
 	Revision   string `json:"revision"`
 	Submodules bool   `json:"submodules"`
+	TLSVerify  bool   `json:"tlsVerify"`
 
 	GitImage string `json:"-"`
 }
@@ -55,6 +56,7 @@ func NewGitResource(gitImage string, r *PipelineResource) (*GitResource, error) 
 		Type:       r.Spec.Type,
 		GitImage:   gitImage,
 		Submodules: true,
+		TLSVerify:  true,
 	}
 	for _, param := range r.Spec.Params {
 		switch {
@@ -64,6 +66,8 @@ func NewGitResource(gitImage string, r *PipelineResource) (*GitResource, error) 
 			gitResource.Revision = param.Value
 		case strings.EqualFold(param.Name, "Submodules"):
 			gitResource.Submodules = toBool(param.Value, true)
+		case strings.EqualFold(param.Name, "TLSVerify"):
+			gitResource.TLSVerify = toBool(param.Value, true)
 		}
 	}
 	// default revision to master if nothing is provided

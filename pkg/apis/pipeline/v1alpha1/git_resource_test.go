@@ -52,6 +52,7 @@ func Test_Valid_NewGitResource(t *testing.T) {
 			Revision:   "test",
 			GitImage:   "override-with-git:latest",
 			Submodules: true,
+			TLSVerify:  true,
 		},
 	}, {
 		desc: "Without Revision",
@@ -67,6 +68,7 @@ func Test_Valid_NewGitResource(t *testing.T) {
 			Revision:   "master",
 			GitImage:   "override-with-git:latest",
 			Submodules: true,
+			TLSVerify:  true,
 		},
 	}, {
 		desc: "With Submodules",
@@ -84,6 +86,7 @@ func Test_Valid_NewGitResource(t *testing.T) {
 			Revision:   "test",
 			GitImage:   "override-with-git:latest",
 			Submodules: false,
+			TLSVerify:  true,
 		},
 	}, {
 		desc: "Without Submodules",
@@ -100,6 +103,26 @@ func Test_Valid_NewGitResource(t *testing.T) {
 			Revision:   "test",
 			GitImage:   "override-with-git:latest",
 			Submodules: true,
+			TLSVerify:  true,
+		},
+	}, {
+		desc: "With TLSVerify",
+		pipelineResource: tb.PipelineResource("git-resource", "default",
+			tb.PipelineResourceSpec(v1alpha1.PipelineResourceTypeGit,
+				tb.PipelineResourceSpecParam("URL", "git@github.com:test/test.git"),
+				tb.PipelineResourceSpecParam("Revision", "test"),
+				tb.PipelineResourceSpecParam("Submodules", "false"),
+				tb.PipelineResourceSpecParam("TLSVerify", "false"),
+			),
+		),
+		want: &v1alpha1.GitResource{
+			Name:       "git-resource",
+			Type:       v1alpha1.PipelineResourceTypeGit,
+			URL:        "git@github.com:test/test.git",
+			Revision:   "test",
+			GitImage:   "override-with-git:latest",
+			Submodules: false,
+			TLSVerify:  false,
 		},
 	}} {
 		t.Run(tc.desc, func(t *testing.T) {
